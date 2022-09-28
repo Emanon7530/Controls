@@ -1,0 +1,541 @@
+<VisualStudioProject>
+    <VisualBasic
+        ProjectType = "Local"
+        ProductVersion = "7.10.3077"
+        SchemaVersion = "2.0"
+        ProjectGuid = "{F61DD2DA-E967-47B3-ADEC-B3AB74BD6C58}"
+    >
+        <Build>
+            <Settings
+                ApplicationIcon = ""
+                AssemblyKeyContainerName = ""
+                AssemblyName = "LibXComponents"
+                AssemblyOriginatorKeyFile = ""
+                AssemblyOriginatorKeyMode = "None"
+                DefaultClientScript = "JScript"
+                DefaultHTMLPageLayout = "Grid"
+                DefaultTargetSchema = "IE50"
+                DelaySign = "false"
+                OutputType = "Library"
+                OptionCompare = "Binary"
+                OptionExplicit = "On"
+                OptionStrict = "Off"
+                RootNamespace = "LibX"
+                StartupObject = "LibX.(None)"
+            >
+                <Config
+                    Name = "Debug"
+                    BaseAddress = "285212672"
+                    ConfigurationOverrideFile = ""
+                    DefineConstants = ""
+                    DefineDebug = "true"
+                    DefineTrace = "true"
+                    DebugSymbols = "true"
+                    IncrementalBuild = "true"
+                    Optimize = "false"
+                    OutputPath = "bin\"
+                    RegisterForComInterop = "false"
+                    RemoveIntegerChecks = "false"
+                    TreatWarningsAsErrors = "false"
+                    WarningLevel = "1"
+                />
+                <Config
+                    Name = "Release"
+                    BaseAddress = "285212672"
+                    ConfigurationOverrideFile = ""
+                    DefineConstants = ""
+                    DefineDebug = "false"
+                    DefineTrace = "true"
+                    DebugSymbols = "false"
+                    IncrementalBuild = "false"
+                    Optimize = "true"
+                    OutputPath = "bin\"
+                    RegisterForComInterop = "false"
+                    RemoveIntegerChecks = "false"
+                    TreatWarningsAsErrors = "false"
+                    WarningLevel = "1"
+                />
+            </Settings>
+            <References>
+                <Reference
+                    Name = "System"
+                    AssemblyName = "System"
+                />
+                <Reference
+                    Name = "System.Data"
+                    AssemblyName = "System.Data"
+                />
+                <Reference
+                    Name = "System.Drawing"
+                    AssemblyName = "System.Drawing"
+                />
+                <Reference
+                    Name = "System.Windows.Forms"
+                    AssemblyName = "System.Windows.Forms"
+                />
+                <Reference
+                    Name = "System.XML"
+                    AssemblyName = "System.Xml"
+                />
+                <Reference
+                    Name = "System.Design"
+                    AssemblyName = "System.Design"
+                    HintPath = "..\..\..\WINDOWS\Microsoft.NET\Framework\v1.1.4322\System.Design.dll"
+                />
+                <Reference
+                    Name = "XMSAComponents"
+                    Project = "{90E9BCDA-B2FD-4DEC-9F14-505B907F7E8E}"
+                    Package = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}"
+                />
+                <Reference
+                    Name = "MaskedTextBox"
+                    Project = "{71541787-A22D-4A65-9C71-7AB7DDF20919}"
+                    Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+                />
+            </References>
+            <Imports>
+                <Import Namespace = "Microsoft.VisualBasic" />
+                <Import Namespace = "System" />
+                <Import Namespace = "System.Collections" />
+                <Import Namespace = "System.Data" />
+                <Import Namespace = "System.Drawing" />
+                <Import Namespace = "System.Diagnostics" />
+                <Import Namespace = "System.Windows.Forms" />
+            </Imports>
+        </Build>
+        <Files>
+            <Include>
+                <File
+                    RelPath = "App.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "AssemblyInfo.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "buttonface.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "buttonface2.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "buttonfacepressed.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "buttonfacepressed2.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "clsPermission.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "clsUser.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "fmLook.vb"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "fmLook.resx"
+                    DependentUpon = "fmLook.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "fullbuttonface.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "fullbuttonfacepressed.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibxCheckbox.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibxCheckbox.resx"
+                    DependentUpon = "LibxCheckbox.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibxCombo.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibxCombo.resx"
+                    DependentUpon = "LibxCombo.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXConnector.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXConnector.resx"
+                    DependentUpon = "LibXConnector.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXConnectorEventArgs.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibxDateTimePicker.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibxDateTimePicker.resx"
+                    DependentUpon = "LibxDateTimePicker.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXDbSourceTable.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXDbSourceTable.resx"
+                    DependentUpon = "LibXDbSourceTable.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXDbSourceTableCollection.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXDbSourceTableCollectionConverter.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXDbSourceTableConverter.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "libxException.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXGrid.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXGrid.resx"
+                    DependentUpon = "LibXGrid.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibxGroupBoxEventArgs.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXLookup.vb"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXLookup.resx"
+                    DependentUpon = "LibXLookup.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXLookupItems.vb"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXLookupItems.resx"
+                    DependentUpon = "LibXLookupItems.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXNavigator.vb"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXNavigator.resx"
+                    DependentUpon = "LibXNavigator.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibxPictureBox.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibxPictureBox.resx"
+                    DependentUpon = "LibxPictureBox.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXRadioGroupBox.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXRadioGroupBox.resx"
+                    DependentUpon = "LibXRadioGroupBox.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LibXRunner.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXShortNavigator.vb"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LibXShortNavigator.resx"
+                    DependentUpon = "LibXShortNavigator.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Login.vb"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Login.resx"
+                    DependentUpon = "Login.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "mdlUtil.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ReportLib.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridBoolColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridBoolColumn.resx"
+                    DependentUpon = "XDataGridBoolColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XDataGridButtonColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridButtonColumn.resx"
+                    DependentUpon = "XDataGridButtonColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XDataGridCellButtonClickEventArgs.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridCellButtonClickEventHandler.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridColumnStyleDesigner.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridComboBoxColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridComboBoxColumn.resx"
+                    DependentUpon = "XDataGridComboBoxColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XDataGridFooterExpField.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridFooterExpFieldConverter.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridFooterOperationsCollection.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridFormatCellEventArgs.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridLinkColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridLinkColumn.resx"
+                    DependentUpon = "XDataGridLinkColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XDataGridNotFocusColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridNotFocusColumn.resx"
+                    DependentUpon = "XDataGridNotFocusColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XDataGridTableStyle.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridTableStylesCollectionEditor.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridTextButtonColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XDataGridTextButtonColumn.resx"
+                    DependentUpon = "XDataGridTextButtonColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XEditTextBoxColumn.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XEditTextBoxColumn.resx"
+                    DependentUpon = "XEditTextBoxColumn.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XIEditProperty.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XMaskEdit.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XMaskEdit.resx"
+                    DependentUpon = "XMaskEdit.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "XTextBox.vb"
+                    SubType = "Component"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "XTextBox.resx"
+                    DependentUpon = "XTextBox.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Data\Adapter.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\fLogin.vb"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\fLogin.resx"
+                    DependentUpon = "fLogin.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Data\LibXManager.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\XConnection.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\XDeleteStmt.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\XInsertStmt.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\XSelectStmt.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Data\XUpdateStmt.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Log\fmError.vb"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Log\fmError.resx"
+                    DependentUpon = "fmError.vb"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Log\LibxErrors.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+            </Include>
+        </Files>
+    </VisualBasic>
+</VisualStudioProject>
+

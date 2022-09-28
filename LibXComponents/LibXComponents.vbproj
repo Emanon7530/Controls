@@ -1,0 +1,361 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>7.10.3077</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F61DD2DA-E967-47B3-ADEC-B3AB74BD6C58}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon />
+    <AssemblyKeyContainerName />
+    <AssemblyName>LibXComponents</AssemblyName>
+    <AssemblyOriginatorKeyFile />
+    <AssemblyOriginatorKeyMode>None</AssemblyOriginatorKeyMode>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionStrict>Off</OptionStrict>
+    <RootNamespace>LibX</RootNamespace>
+    <StartupObject>LibX.%28None%29</StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <MyType>Windows</MyType>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>0.0</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>LibXComponents.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants />
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>LibXComponents.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants />
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MaskedTextBox\MaskedTextBox.csproj">
+      <Name>MaskedTextBox</Name>
+      <Project>{71541787-A22D-4A65-9C71-7AB7DDF20919}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="..\XMSAComponents\XMSAComponents.vbproj">
+      <Name>XMSAComponents</Name>
+      <Project>{90E9BCDA-B2FD-4DEC-9F14-505B907F7E8E}</Project>
+      <Package>{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</Package>
+    </ProjectReference>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Design">
+      <Name>System.Design</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Data" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssemblyInfo.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="clsPermission.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="clsUser.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\Adapter.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\fLogin.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Data\LibXManager.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\XConnection.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\XDeleteStmt.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\XInsertStmt.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\XSelectStmt.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\XUpdateStmt.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="fmLook.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LibxCheckbox.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibxCombo.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXConnector.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXConnectorEventArgs.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibxDateTimePicker.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXDbSourceTable.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXDbSourceTableCollection.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibXDbSourceTableCollectionConverter.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibXDbSourceTableConverter.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="libxException.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibXGrid.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibxGroupBoxEventArgs.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibXLookup.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LibXLookupItems.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LibXNavigator.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LibxPictureBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXRadioGroupBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LibXRunner.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LibXShortNavigator.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Login.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Log\fmError.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Log\LibxErrors.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="mdlUtil.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReportLib.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridBoolColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridButtonColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridCellButtonClickEventArgs.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridCellButtonClickEventHandler.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridColumnStyleDesigner.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridComboBoxColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridFooterExpField.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridFooterExpFieldConverter.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridFooterOperationsCollection.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridFormatCellEventArgs.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridLinkColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridNotFocusColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridTableStyle.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XDataGridTableStylesCollectionEditor.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XDataGridTextButtonColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XEditTextBoxColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XIEditProperty.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XMaskEdit.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="XTextBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <EmbeddedResource Include="buttonface.bmp" />
+    <EmbeddedResource Include="buttonface2.bmp" />
+    <EmbeddedResource Include="buttonfacepressed.bmp" />
+    <EmbeddedResource Include="buttonfacepressed2.bmp" />
+    <EmbeddedResource Include="Data\fLogin.resx">
+      <DependentUpon>fLogin.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fmLook.resx">
+      <DependentUpon>fmLook.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fullbuttonface.bmp" />
+    <EmbeddedResource Include="fullbuttonfacepressed.bmp" />
+    <EmbeddedResource Include="LibxCheckbox.resx">
+      <DependentUpon>LibxCheckbox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibxCombo.resx">
+      <DependentUpon>LibxCombo.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXConnector.resx">
+      <DependentUpon>LibXConnector.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibxDateTimePicker.resx">
+      <DependentUpon>LibxDateTimePicker.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXDbSourceTable.resx">
+      <DependentUpon>LibXDbSourceTable.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXGrid.resx">
+      <DependentUpon>LibXGrid.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXLookup.resx">
+      <DependentUpon>LibXLookup.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXLookupItems.resx">
+      <DependentUpon>LibXLookupItems.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXNavigator.resx">
+      <DependentUpon>LibXNavigator.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibxPictureBox.resx">
+      <DependentUpon>LibxPictureBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXRadioGroupBox.resx">
+      <DependentUpon>LibXRadioGroupBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibXShortNavigator.resx">
+      <DependentUpon>LibXShortNavigator.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Login.resx">
+      <DependentUpon>Login.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Log\fmError.resx">
+      <DependentUpon>fmError.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridBoolColumn.resx">
+      <DependentUpon>XDataGridBoolColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridButtonColumn.resx">
+      <DependentUpon>XDataGridButtonColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridComboBoxColumn.resx">
+      <DependentUpon>XDataGridComboBoxColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridLinkColumn.resx">
+      <DependentUpon>XDataGridLinkColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridNotFocusColumn.resx">
+      <DependentUpon>XDataGridNotFocusColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XDataGridTextButtonColumn.resx">
+      <DependentUpon>XDataGridTextButtonColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XEditTextBoxColumn.resx">
+      <DependentUpon>XEditTextBoxColumn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XMaskEdit.resx">
+      <DependentUpon>XMaskEdit.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XTextBox.resx">
+      <DependentUpon>XTextBox.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+    <PostBuildEvent />
+  </PropertyGroup>
+</Project>

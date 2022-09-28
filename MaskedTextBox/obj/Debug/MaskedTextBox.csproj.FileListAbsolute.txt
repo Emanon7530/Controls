@@ -1,0 +1,8 @@
+D:\Emanon\Manon Sys\Controls\LibXComponents\bin\MaskedTextBox.dll
+D:\Emanon\Manon Sys\Controls\LibXComponents\bin\MaskedTextBox.pdb
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.csproj.AssemblyReference.cache
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.MaskedTextBox.resources
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.csproj.GenerateResource.cache
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.csproj.CoreCompileInputs.cache
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.dll
+D:\Emanon\Manon Sys\Controls\MaskedTextBox\obj\Debug\MaskedTextBox.pdb

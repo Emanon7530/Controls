@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+XMsgComponents
+</name>
+</assembly>
+<members>
+<member name="T:XMsaComponents.XMsaToolBar">
+ <summary>
+  Representa un ToolBar estático. Este ToolBar es un navegador de cualquier datasource. Pero 
+  que a su vez es un datasource. El proceso es que los controles se enlazan a este como datasource
+  y un dataset a éste.
+ </summary>
+</member>
+</members>
+</doc>
