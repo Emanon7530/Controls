@@ -1,4 +1,7 @@
 Imports System.Configuration.ConfigurationSettings
+Imports LibXComponents.DataAccess ' For AppDbContext
+Imports LibXComponents.Entities   ' For User entity
+Imports Microsoft.EntityFrameworkCore ' For FirstOrDefault and other LINQ methods
 
 Namespace Data
     ''' <summary>
@@ -273,15 +276,30 @@ Namespace Data
                         End If
 
                         mConStr = System.Configuration.ConfigurationSettings.AppSettings.Get("LibXConnectionStr")
-                        mSuCursal = System.Configuration.ConfigurationSettings.AppSettings.Get("LibxScDefault")
-                        mConnection = New XConnection(mConStr)
-                        mConnection.Open()
+                        mSuCursal = Convert.ToInt32(System.Configuration.ConfigurationSettings.AppSettings.Get("LibxScDefault")) ' Ensure mSuCursal is Integer for EF Core query
+                        ' mConnection = New XConnection(mConStr) ' Temporarily commented out for EF Core transition
+                        ' mConnection.Open() ' This will eventually be removed or refactored too. Old connection not needed for this EF Core path.
 
-                        Dim sSql As String = String.Concat("Select * from scusers where username ='", Trim(sUsr), "' and passwrd='", Trim(sPass), "' and suc_code = " & mSuCursal)
+                        Dim sSql As String = String.Concat("Select * from scusers where username ='", Trim(sUsr), "' and passwrd='", Trim(sPass), "' and suc_code = " & mSuCursal) ' This line will also be removed
 
-                        Dim oRow As DataRow = LibX.Data.Manager.GetDataRow(sSql)
+                        ' --- EF Core user query ---
+                        Using context As New AppDbContext() ' AppDbContext now uses temporary hardcoded connection string
+                            Dim trimmedUser = Trim(sUsr)
+                            Dim appUser = context.Users.FirstOrDefault(Function(u) u.UserName = trimmedUser AndAlso u.SucursalCode = mSuCursal)
 
-                        If Not oRow Is Nothing Then
+                            If appUser IsNot Nothing Then
+                                ' Logic for successful user find will go here
+                            Else
+                                System.Windows.Forms.MessageBox.Show("Usuario o Contraseña inválida.", "ACCESO DENEGADO", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                            End If
+                            ' Further logic will be inserted here in next steps (checking appUser, password, etc.)
+
+                        End Using
+                        ' --- End EF Core user query ---
+
+                        ' Dim oRow As DataRow = LibX.Data.Manager.GetDataRow(sSql) ' Refactoring to EF Core
+
+                        If Not oRow Is Nothing Then ' This condition will be replaced by EF Core appUser check
                             User.UserID = oRow!userid.ToString
                             User.UserName = oRow!username.ToString
                             User.VendedorID = Val(oRow!vend_code.ToString)

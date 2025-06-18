@@ -1,4 +1,8 @@
 Imports System.ComponentModel
+Imports LibXComponents.Data ' For EfDataHelper
+Imports LibXComponents.Entities ' For User, GenericItem
+Imports System.Collections.Generic ' For List(Of T)
+Imports System.Threading.Tasks ' For Task
 
 Public Enum LibxConnectionActions
     None = 0
@@ -637,16 +641,129 @@ Public Property ReportMode() As Boolean
             Dim oT As LibX.LibXDbSourceTable
             Dim sCol As String
             oT = Me.mSources.Item(tabName)
+            oT = Me.mSources.Item(tabName)
             If Not oT Is Nothing Then
                 sCol = oT.SerialColumnName
             End If
 
+            If blnChanges AndAlso Not oT.CustomDbUpdate Then
+                Dim entitySavedSuccessfully As Boolean = False
+                Dim recordsAffected As Integer = 0
+                Dim pkValue As Object = Nothing ' To store PK for InsertedRow event
+                Dim entityIsUser As Boolean = False
 
-            If blnChanges And Not oT.CustomDbUpdate Then
-                mSaver.Save(oTable, sCol, oT)
+                If oTable IsNot Nothing AndAlso oTable.Rows.Count > 0 Then
+                    Dim modifiedRow As DataRow = oTable.Rows(0)
+
+                    ' Determine PK value from the original row version for finding the entity
+                    Dim originalPkValue As Object = Nothing
+                    If Not String.IsNullOrEmpty(sCol) AndAlso modifiedRow.Table.Columns.Contains(sCol) Then
+                        originalPkValue = modifiedRow(sCol, DataRowVersion.Original)
+                    ElseIf modifiedRow.Table.PrimaryKey.Length > 0 Then
+                        originalPkValue = modifiedRow(modifiedRow.Table.PrimaryKey(0).ColumnName, DataRowVersion.Original)
+                    Else
+                        Log.Add("AcceptEdit: Cannot identify Primary Key for table " & tabName & " to update record.")
+                    End If
+
+                    pkValue = originalPkValue ' Store for InsertedRow event, assuming PK doesn't change
+
+                    If originalPkValue IsNot Nothing AndAlso originalPkValue IsNot DBNull.Value Then
+                        ' --- Simulate InsertingRow Event ---
+                        Dim insertingArgs As New LibX.Data.AdpaterRowUpdatingEventArgs()
+                        Dim fakeOleDbUpdatingArgs As System.Data.Common.RowUpdatingEventArgs = Nothing
+                        Try
+                            fakeOleDbUpdatingArgs = New System.Data.Common.RowUpdatingEventArgs(modifiedRow, Nothing, StatementType.Update, Nothing)
+                        Catch exMockArgs As Exception
+                            Log.Add("AcceptEdit: Could not create fake RowUpdatingEventArgs for InsertingRow. " & exMockArgs.Message)
+                        End Try
+                        insertingArgs.TableInfo = oT
+                        ' insertingArgs.UpdatingArgs = fakeOleDbUpdatingArgs ' Problematic
+
+                        RaiseEvent InsertingRow(Me, insertingArgs)
+
+                        Dim skipSave As Boolean = insertingArgs.Handled
+                        If Not skipSave AndAlso fakeOleDbUpdatingArgs IsNot Nothing AndAlso fakeOleDbUpdatingArgs.Status = UpdateStatus.SkipCurrentRow Then
+                            skipSave = True
+                        End If
+
+                        If skipSave Then
+                            If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                                LibX.Data.Manager.Connection.RollBackTransaction()
+                            End If
+                            mds.RejectChanges()
+                            Return ' Exit Sub
+                        End If
+
+                        ' --- EF Core Save Operation ---
+                        Try
+                            Using context As New AppDbContext()
+                                Dim foundEntity As Object = Nothing
+                                If tabName.ToLower() = "scusers" Then
+                                    entityIsUser = True
+                                    Dim userIdToFind As String = Convert.ToString(originalPkValue)
+                                    Dim userToUpdate = context.Users.Find(userIdToFind)
+                                    If userToUpdate IsNot Nothing Then
+                                        If modifiedRow.Table.Columns.Contains("UserName") Then userToUpdate.UserName = modifiedRow.Field(Of String)("UserName")
+                                        If modifiedRow.Table.Columns.Contains("PasswordHash") Then userToUpdate.PasswordHash = modifiedRow.Field(Of String)("PasswordHash")
+                                        If modifiedRow.Table.Columns.Contains("SucursalCode") Then userToUpdate.SucursalCode = modifiedRow.Field(Of Integer)("SucursalCode")
+                                        If modifiedRow.Table.Columns.Contains("VendedorCode") Then userToUpdate.VendedorCode = modifiedRow.Field(Of Integer)("VendedorCode")
+                                        ' TODO: Map other User properties
+                                        foundEntity = userToUpdate
+                                    Else
+                                        Log.Add("AcceptEdit: User with ID " & userIdToFind & " not found for update.")
+                                    End If
+                                Else ' Default to GenericItem
+                                    entityIsUser = False
+                                    Dim itemIdToFind As Integer = Convert.ToInt32(originalPkValue)
+                                    Dim itemToUpdate = context.GenericItems.Find(itemIdToFind)
+                                    If itemToUpdate IsNot Nothing Then
+                                        If modifiedRow.Table.Columns.Contains("Name") Then itemToUpdate.Name = modifiedRow.Field(Of String)("Name")
+                                        If modifiedRow.Table.Columns.Contains("Description") Then itemToUpdate.Description = modifiedRow.Field(Of String)("Description")
+                                        If modifiedRow.Table.Columns.Contains("ModifiedDate") Then itemToUpdate.ModifiedDate = DateTime.Now
+                                        ' TODO: Map other GenericItem properties
+                                        foundEntity = itemToUpdate
+                                    Else
+                                        Log.Add("AcceptEdit: GenericItem with ID " & itemIdToFind & " not found for update.")
+                                    End If
+                                End If
+
+                                If foundEntity IsNot Nothing Then
+                                    recordsAffected = context.SaveChanges().GetAwaiter().GetResult() ' TODO: Async
+                                    entitySavedSuccessfully = (recordsAffected > 0)
+                                End If
+                            End Using
+                        Catch exDb As Exception
+                            Log.Add(exDb)
+                            If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                                LibX.Data.Manager.Connection.RollBackTransaction()
+                            End If
+                            Throw
+                        End Try
+                    End If
+                End If
+
+                If entitySavedSuccessfully Then
+                    ' --- Simulate InsertedRow Event ---
+                    Dim updatedArgs As New LibX.Data.AdpaterRowUpdatedEventArgs()
+                    Dim fakeOleDbUpdatedArgs As System.Data.Common.RowUpdatedEventArgs = Nothing
+                    Try
+                        fakeOleDbUpdatedArgs = New System.Data.Common.RowUpdatedEventArgs(modifiedRow, Nothing, StatementType.Update, recordsAffected)
+                    Catch exMockArgs As Exception
+                        Log.Add("AcceptEdit: Could not create fake RowUpdatedEventArgs for InsertedRow. " & exMockArgs.Message)
+                    End Try
+                    updatedArgs.TableInfo = oT
+                    ' updatedArgs.UpdatingArgs = fakeOleDbUpdatedArgs ' If possible
+                    If pkValue IsNot Nothing Then ' pkValue here is the original PK, used for identification
+                       If TypeOf pkValue Is Integer Then updatedArgs.Serial = CInt(pkValue)
+                       ElseIf TypeOf pkValue Is String Then Integer.TryParse(pkValue.ToString(), updatedArgs.Serial)
+                       End If
+                    End If
+                    RaiseEvent InsertedRow(Me, updatedArgs)
+                    blnChanges = False
+                End If
             End If
 
-            If Not blnChanges And Not mHandledUpdates Then
+            If Not blnChanges AndAlso Not mHandledUpdates Then
                 ExecSaveDetail(CType(cm.Current, DataRowView).Row)
 
             End If
@@ -783,53 +900,150 @@ Public Property ReportMode() As Boolean
             Dim sCol As String
             oT = Me.mSources.Item(tabName)
             If Not oT Is Nothing Then
-                sCol = oT.SerialColumnName
+                sCol = oT.SerialColumnName ' sCol might be used for PK identification if TableInfo is not fully detailed
             End If
 
-            If blnChanges And Not oT.CustomDbUpdate Then
-                mSaver.Save(oTable, sCol, oT)
-            End If
+            Dim entityDeletedSuccessfully As Boolean = False
+            Dim pkValue As Object = Nothing
+            Dim originalRowForDetailDelete As DataRow = drvToDelete.Row ' drvToDelete captured before cm.RemoveAt
 
-            If Not blnChanges And Not mHandledUpdates Then
-                ExecDeleteDetail(CType(cm.Current, DataRowView).Row)
-            End If
-
-            If mUseTransactions And Not mHandledUpdates Then
-                LibX.Data.Manager.Connection.CommitTransaction()
-            End If
-
-            If Not oTable Is Nothing And Not mHandledUpdates Then
-
-                If mds.Tables(tabName).PrimaryKey.Length = 0 Then
-                    Dim objrow As DataRow
-                    Dim i As Integer = 0
-                    mds.Tables(tabName).BeginLoadData()
-
-                    For Each objrow In mds.Tables(tabName).Rows
-                        If objrow.RowState = DataRowState.Added Or objrow.RowState = DataRowState.Modified Then
-                            For j As Integer = 0 To oTable.Columns.Count - 1
-                                mds.Tables(tabName).Columns(j).ReadOnly = False
-                                objrow(j) = oTable.Rows(i)(j)
-                            Next j
-                            i += 1
-                        End If
-                    Next
-
-                    mds.Tables(tabName).EndLoadData()
-                Else
-                    Me.mDs.Merge(oTable)
-
-                    Dim i As Integer
-                    oTable = mDs.Tables(tabName)
-                    For i = oTable.Rows.Count - 1 To 0 Step -1
-                        If oTable.Rows(i).RowState = DataRowState.Added Then
-                            oTable.Rows.RemoveAt(i)
-                        End If
-                    Next
+            ' Determine PK value from the original row (before it was removed from CurrencyManager)
+            If originalRowForDetailDelete IsNot Nothing Then
+                If tabName.ToLower() = "scusers" Then
+                    If originalRowForDetailDelete.Table.Columns.Contains("UserID") Then
+                        pkValue = originalRowForDetailDelete.Field(Of String)("UserID")
+                    End If
+                Else ' Assuming GenericItem or other tables with "Id" as PK
+                    If originalRowForDetailDelete.Table.Columns.Contains("Id") Then
+                        pkValue = originalRowForDetailDelete.Field(Of Integer)("Id")
+                    End If
+                End If
+                ' TODO: Need a more robust way to get PK column name and type, perhaps from oT.KeyFields
+                If pkValue Is Nothing AndNot String.IsNullOrEmpty(sCol) AndAlso originalRowForDetailDelete.Table.Columns.Contains(sCol) Then
+                     pkValue = originalRowForDetailDelete(sCol) ' Fallback to sCol if specific PK logic above fails
                 End If
             End If
 
-            mds.AcceptChanges()
+            ' The original code determined blnChanges AFTER cm.RemoveAt by looking at mds.GetChanges.
+            ' If oTable (from mds.GetChanges) is not Nothing and has rows, it means the row was marked as Deleted.
+            If blnChanges AndAlso Not oT.CustomDbUpdate Then
+                If pkValue IsNot Nothing AndAlso pkValue IsNot DBNull.Value Then
+                    Dim recordsAffected As Integer = 0
+                    Dim entityToDeleteForEvent As Object = Nothing ' Used to hold a temporary entity for event args if needed
+
+                    ' --- Simulate InsertingRow Event ---
+                    Dim insertingArgs As New LibX.Data.AdpaterRowUpdatingEventArgs()
+                    Dim fakeOleDbUpdatingArgs As System.Data.Common.RowUpdatingEventArgs = Nothing
+                    Try
+                        ' originalRowForDetailDelete is the DataRow before cm.RemoveAt
+                        fakeOleDbUpdatingArgs = New System.Data.Common.RowUpdatingEventArgs(originalRowForDetailDelete, Nothing, StatementType.Delete, Nothing)
+                    Catch exMockArgs As Exception
+                        Log.Add("Delete: Could not create fake RowUpdatingEventArgs for InsertingRow. " & exMockArgs.Message)
+                    End Try
+                    insertingArgs.TableInfo = oT
+                    ' insertingArgs.UpdatingArgs = fakeOleDbUpdatingArgs ' Problematic due to type
+
+                    RaiseEvent InsertingRow(Me, insertingArgs)
+
+                    Dim skipSave As Boolean = insertingArgs.Handled
+                    If Not skipSave AndAlso fakeOleDbUpdatingArgs IsNot Nothing AndAlso fakeOleDbUpdatingArgs.Status = UpdateStatus.SkipCurrentRow Then
+                        skipSave = True
+                    End If
+
+                    If skipSave Then
+                        If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                            LibX.Data.Manager.Connection.RollBackTransaction()
+                        End If
+                        mds.RejectChanges() ' Revert cm.RemoveAt
+                        Return ' Exit Sub
+                    End If
+
+                    ' --- EF Core Delete Operation ---
+                    Try
+                        Using context As New AppDbContext()
+                            If tabName.ToLower() = "scusers" Then
+                                Dim userToDelete = context.Users.Find(Convert.ToString(pkValue))
+                                If userToDelete IsNot Nothing Then
+                                    context.Users.Remove(userToDelete)
+                                    recordsAffected = context.SaveChanges().GetAwaiter().GetResult() ' TODO: Convert Delete to Async
+                                    entityDeletedSuccessfully = (recordsAffected > 0)
+                                End If
+                            Else ' Default to GenericItem
+                                Dim itemToDelete = context.GenericItems.Find(Convert.ToInt32(pkValue))
+                                If itemToDelete IsNot Nothing Then
+                                    context.GenericItems.Remove(itemToDelete)
+                                    recordsAffected = context.SaveChanges().GetAwaiter().GetResult() ' TODO: Convert Delete to Async
+                                    entityDeletedSuccessfully = (recordsAffected > 0)
+                                End If
+                            End If
+                        End Using
+
+                        If Not entityDeletedSuccessfully Then
+                             Log.Add("Delete: Entity with PK " & pkValue.ToString() & " for table " & tabName & " not found or DB save failed.")
+                        Else
+                             blnChanges = False ' EF Core handled the delete
+                        End If
+                    Catch exDb As Exception
+                        Log.Add(exDb)
+                        If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                            LibX.Data.Manager.Connection.RollBackTransaction()
+                        End If
+                        mds.RejectChanges()
+                        Throw
+                    End Try
+                Else
+                    Log.Add("Delete: Primary Key not found for table " & tabName & ". Cannot delete via EF Core.")
+                    If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                         LibX.Data.Manager.Connection.RollBackTransaction()
+                    End If
+                    mds.RejectChanges()
+                    Return
+                End If
+            End If
+
+            ' --- Simulate InsertedRow Event (if EF Core delete was successful) ---
+            If entityDeletedSuccessfully Then
+                Dim insertedArgs As New LibX.Data.AdpaterRowUpdatedEventArgs()
+                Dim fakeOleDbUpdatedArgs As System.Data.Common.RowUpdatedEventArgs = Nothing
+                Try
+                    fakeOleDbUpdatedArgs = New System.Data.Common.RowUpdatedEventArgs(originalRowForDetailDelete, Nothing, StatementType.Delete, recordsAffected)
+                Catch exMockArgs As Exception
+                    Log.Add("Delete: Could not create fake RowUpdatedEventArgs for InsertedRow. " & exMockArgs.Message)
+                End Try
+                insertedArgs.TableInfo = oT
+                ' insertedArgs.UpdatingArgs = fakeOleDbUpdatedArgs ' If possible
+                If pkValue IsNot Nothing Then
+                   If TypeOf pkValue Is Integer Then insertedArgs.Serial = CInt(pkValue)
+                   ElseIf TypeOf pkValue Is String Then Integer.TryParse(pkValue.ToString(), insertedArgs.Serial)
+                   End If
+                End If
+                RaiseEvent InsertedRow(Me, insertedArgs)
+            End If
+
+            If originalRowForDetailDelete IsNot Nothing Then
+                 ExecDeleteDetail(originalRowForDetailDelete)
+            End If
+
+            If mUseTransactions AndAlso Not mHandledUpdates Then
+                If entityDeletedSuccessfully OrElse oT.CustomDbUpdate Then ' If EF delete or custom update happened
+                    LibX.Data.Manager.Connection.CommitTransaction()
+                Else
+                    If LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                        LibX.Data.Manager.Connection.RollBackTransaction()
+                    End If
+                    mds.RejectChanges()
+                    Return
+                End If
+            End If
+
+            If entityDeletedSuccessfully OrElse oT.CustomDbUpdate Then
+                 mds.AcceptChanges() ' Finalize UI change if DB operation was successful
+            Else
+                 mds.RejectChanges()
+            End If
+            ' The following block for merging was specific to how updates/inserts might affect a separate 'oTable'.
+            ' For deletes, mds.AcceptChanges() or mds.RejectChanges() above should handle the state of the main DataTable.
+            ' If Not oTable Is Nothing And Not mHandledUpdates Then
 
             Me.mIsEditing = False
 
@@ -1993,12 +2207,125 @@ Public Property ReportMode() As Boolean
                 sCol = oT.SerialColumnName
             End If
 
-            If blnChanges = True And oT.CustomDbUpdate = False Then
-                mSaver.Save(oTable, sCol, oT)
-                blnChanges = False
+            oT = Me.mSources.Item(tabName)
+            If Not oT Is Nothing Then
+                sCol = oT.SerialColumnName
             End If
 
-            If blnChanges = True And mHandledUpdates = False Then
+            If blnChanges = True AndAlso oT.CustomDbUpdate = False Then
+                Dim entitySavedSuccessfully As Boolean = False
+                Dim newEntityPrimaryKey As Object = Nothing
+                Dim recordsAffected As Integer = 0
+
+                If oTable IsNot Nothing AndAlso oTable.Rows.Count > 0 Then
+                    Dim newRowToSave As DataRow = oTable.Rows(0)
+                    Dim entityToSave As Object = Nothing
+                    Dim newEntityIsUser As Boolean = False
+
+                    ' --- Create and Populate Entity ---
+                    If tabName.ToLower() = "scusers" Then
+                        Dim newUser As New User()
+                        If newRowToSave.Table.Columns.Contains("UserID") AndAlso Not newRowToSave.IsNull("UserID") Then newUser.UserID = newRowToSave.Field(Of String)("UserID")
+                        If newRowToSave.Table.Columns.Contains("UserName") AndAlso Not newRowToSave.IsNull("UserName") Then newUser.UserName = newRowToSave.Field(Of String)("UserName")
+                        If newRowToSave.Table.Columns.Contains("PasswordHash") AndAlso Not newRowToSave.IsNull("PasswordHash") Then newUser.PasswordHash = newRowToSave.Field(Of String)("PasswordHash")
+                        If newRowToSave.Table.Columns.Contains("SucursalCode") AndAlso Not newRowToSave.IsNull("SucursalCode") Then newUser.SucursalCode = newRowToSave.Field(Of Integer)("SucursalCode")
+                        If newRowToSave.Table.Columns.Contains("VendedorCode") AndAlso Not newRowToSave.IsNull("VendedorCode") Then newUser.VendedorCode = newRowToSave.Field(Of Integer)("VendedorCode")
+                        entityToSave = newUser
+                        newEntityIsUser = True
+                    Else
+                        Dim newItem As New GenericItem()
+                        If newRowToSave.Table.Columns.Contains("Name") AndAlso Not newRowToSave.IsNull("Name") Then newItem.Name = newRowToSave.Field(Of String)("Name")
+                        If newRowToSave.Table.Columns.Contains("Description") AndAlso Not newRowToSave.IsNull("Description") Then newItem.Description = newRowToSave.Field(Of String)("Description")
+                        If newRowToSave.Table.Columns.Contains("CreatedDate") AndAlso Not newRowToSave.IsNull("CreatedDate") Then newItem.CreatedDate = newRowToSave.Field(Of DateTime)("CreatedDate") Else newItem.CreatedDate = DateTime.Now
+                        entityToSave = newItem
+                        newEntityIsUser = False
+                    End If
+
+                    ' --- Simulate InsertingRow Event ---
+                    Dim insertingArgs As New LibX.Data.AdpaterRowUpdatingEventArgs()
+                    Dim fakeOleDbUpdatingArgs As System.Data.Common.RowUpdatingEventArgs = Nothing
+                    Try
+                        fakeOleDbUpdatingArgs = New System.Data.Common.RowUpdatingEventArgs(newRowToSave, Nothing, StatementType.Insert, Nothing)
+                        ' TODO: If AdpaterRowUpdatingEventArgs has a constructor or property to accept fakeOleDbUpdatingArgs, use it.
+                        ' For now, we assume TableInfo is the primary part used by handlers, or Handled property.
+                    Catch exMockArgs As Exception
+                        Log.Add("AcceptNew: Could not create fake RowUpdatingEventArgs for InsertingRow. " & exMockArgs.Message)
+                    End Try
+                    insertingArgs.TableInfo = oT
+                    ' If insertingArgs.UpdatingArgs can be set and is typed to the base System.Data.Common.RowUpdatingEventArgs:
+                    ' insertingArgs.UpdatingArgs = fakeOleDbUpdatingArgs
+
+                    RaiseEvent InsertingRow(Me, insertingArgs)
+
+                    Dim skipSave As Boolean = insertingArgs.Handled
+                    If Not skipSave AndAlso fakeOleDbUpdatingArgs IsNot Nothing AndAlso fakeOleDbUpdatingArgs.Status = UpdateStatus.SkipCurrentRow Then
+                        skipSave = True
+                    End If
+
+                    If skipSave Then
+                        If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                            LibX.Data.Manager.Connection.RollBackTransaction() ' Rollback if event handler cancelled
+                        End If
+                        Return ' Exit Sub as operation was cancelled
+                    End If
+
+                    ' --- EF Core Save Operation ---
+                    Try
+                        If entityToSave IsNot Nothing Then
+                            Using context As New AppDbContext()
+                                If newEntityIsUser Then
+                                    context.Users.Add(CType(entityToSave, User))
+                                Else
+                                    context.GenericItems.Add(CType(entityToSave, GenericItem))
+                                End If
+                                recordsAffected = context.SaveChanges().GetAwaiter().GetResult() ' TODO: Convert AcceptNew to Async
+                                entitySavedSuccessfully = (recordsAffected > 0)
+
+                                If entitySavedSuccessfully Then
+                                    If newEntityIsUser Then
+                                        newEntityPrimaryKey = CType(entityToSave, User).UserID
+                                    Else
+                                        newEntityPrimaryKey = CType(entityToSave, GenericItem).Id
+                                    End If
+                                    If Not String.IsNullOrEmpty(sCol) AndAlso newRowToSave.Table.Columns.Contains(sCol) AndAlso newEntityPrimaryKey IsNot Nothing Then
+                                        newRowToSave(sCol) = newEntityPrimaryKey
+                                    End If
+                                End If
+                            End Using
+                        End If
+                    Catch exDb As Exception
+                        Log.Add(exDb)
+                        If mUseTransactions AndAlso LibX.Data.Manager.Connection IsNot Nothing AndAlso LibX.Data.Manager.Connection.IsIntransaction Then
+                            LibX.Data.Manager.Connection.RollBackTransaction()
+                        End If
+                        Throw
+                    End Try
+
+                    ' --- Simulate InsertedRow Event ---
+                    If entitySavedSuccessfully Then
+                        Dim insertedArgs As New LibX.Data.AdpaterRowUpdatedEventArgs()
+                        Dim fakeOleDbUpdatedArgs As System.Data.Common.RowUpdatedEventArgs = Nothing
+                        Try
+                             fakeOleDbUpdatedArgs = New System.Data.Common.RowUpdatedEventArgs(newRowToSave, Nothing, StatementType.Insert, recordsAffected)
+                        Catch exMockArgs As Exception
+                            Log.Add("AcceptNew: Could not create fake RowUpdatedEventArgs for InsertedRow. " & exMockArgs.Message)
+                        End Try
+                        insertedArgs.TableInfo = oT
+                        ' insertedArgs.UpdatingArgs = fakeOleDbUpdatedArgs ' If possible
+                        If newEntityPrimaryKey IsNot Nothing Then
+                            If TypeOf newEntityPrimaryKey Is Integer Then
+                                insertedArgs.Serial = CInt(newEntityPrimaryKey)
+                            ElseIf TypeOf newEntityPrimaryKey Is String Then
+                                Integer.TryParse(newEntityPrimaryKey.ToString(), insertedArgs.Serial)
+                            End If
+                        End If
+                        RaiseEvent InsertedRow(Me, insertedArgs)
+                        blnChanges = False
+                    End If
+                End If
+            End If
+
+            If blnChanges = True AndAlso mHandledUpdates = False Then
                 ExecSaveDetail(CType(cm.Current, DataRowView).Row)
             End If
 
@@ -2165,12 +2492,48 @@ Public Property ReportMode() As Boolean
             mds.Tables(tabName).Rows.Clear()
 
             If oAeq2.DoFill Then
-                Dim oAd As New OleDb.OleDbDataAdapter(oAeq2.Sql, LibX.Data.Manager.Connection.ConnectionObject)
-                If LibX.Data.Manager.Connection.IsIntransaction = True Then
-                    oAd.SelectCommand.Transaction = LibX.Data.Manager.Connection.ActiveTransaction
-                End If
+                ' --- EF Core Data Fetching ---
+                ' TODO: Convert ExecuteFind to an Async method to properly use Await.
+                ' Calling .GetAwaiter().GetResult() blocks the current thread and can lead to deadlocks in some contexts.
+                ' TODO: Implement dynamic entity type determination based on tabName or a mapping instead of If/ElseIf.
 
-                oAd.Fill(mds.Tables(tabName))
+                Dim fetchedData As System.Collections.IList
+                Try
+                    If tabName.Equals("scusers", StringComparison.OrdinalIgnoreCase) Then
+                        fetchedData = EfDataHelper.GetEntityListFromSqlAsync(Of User)(oAeq2.Sql, Nothing).GetAwaiter().GetResult()
+                    Else
+                        fetchedData = EfDataHelper.GetEntityListFromSqlAsync(Of GenericItem)(oAeq2.Sql, Nothing).GetAwaiter().GetResult()
+                    End If
+                Catch ex As Exception
+                    Log.Add(ex) ' Log the exception
+                    fetchedData = New List(Of Object)() ' Ensure fetchedData is not null and is of a type that can be iterated if empty
+                End Try
+
+                If fetchedData IsNot Nothing Then
+                    For Each item As Object In fetchedData
+                        Dim newRow As DataRow = mds.Tables(tabName).NewRow()
+                        ' --- Map properties from item to newRow ---
+                        If TypeOf item Is User Then
+                            Dim userItem = CType(item, User)
+                            If mds.Tables(tabName).Columns.Contains("UserID") Then newRow("UserID") = userItem.UserID
+                            If mds.Tables(tabName).Columns.Contains("UserName") AndAlso userItem.UserName IsNot Nothing Then newRow("UserName") = userItem.UserName Else If mds.Tables(tabName).Columns.Contains("UserName") Then newRow("UserName") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("PasswordHash") AndAlso userItem.PasswordHash IsNot Nothing Then newRow("PasswordHash") = userItem.PasswordHash Else If mds.Tables(tabName).Columns.Contains("PasswordHash") Then newRow("PasswordHash") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("SucursalCode") Then newRow("SucursalCode") = userItem.SucursalCode
+                            If mds.Tables(tabName).Columns.Contains("VendedorCode") Then newRow("VendedorCode") = userItem.VendedorCode
+                            ' TODO: Map other User properties as needed.
+                        ElseIf TypeOf item Is GenericItem Then
+                            Dim genericItem = CType(item, GenericItem)
+                            If mds.Tables(tabName).Columns.Contains("Id") Then newRow("Id") = genericItem.Id
+                            If mds.Tables(tabName).Columns.Contains("Name") AndAlso genericItem.Name IsNot Nothing Then newRow("Name") = genericItem.Name Else If mds.Tables(tabName).Columns.Contains("Name") Then newRow("Name") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("Description") AndAlso genericItem.Description IsNot Nothing Then newRow("Description") = genericItem.Description Else If mds.Tables(tabName).Columns.Contains("Description") Then newRow("Description") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("CreatedDate") Then newRow("CreatedDate") = genericItem.CreatedDate
+                            ' TODO: Map other GenericItem properties as needed.
+                        End If
+                        mds.Tables(tabName).Rows.Add(newRow)
+                    Next
+                    mds.Tables(tabName).AcceptChanges() ' Commit changes to the DataTable
+                End If
+                ' --- End EF Core Data Fetching ---
             End If
 
             Me.mRecordCount = mds.Tables(tabName).Rows.Count
@@ -2291,8 +2654,7 @@ Public Property ReportMode() As Boolean
 
             RaiseEvent BeforeExecuteQuery(Me, oAeq)
 
-            mds.RejectChanges()
-
+            mds.RejectChanges() ' Preserving this call
 
             oAeq2.DoFill = oAeq.DoFill
             oAeq2.Sql = ConcatWherePart(oAeq.Sql, oAeq.Where)
@@ -2306,12 +2668,52 @@ Public Property ReportMode() As Boolean
             mds.Tables(tabName).Rows.Clear()
 
             If oAeq2.DoFill And Not Me.mHandledRowsFill Then
-                Dim oAd As New OleDb.OleDbDataAdapter(oAeq2.Sql, LibX.Data.Manager.Connection.ConnectionObject)
-                If LibX.Data.Manager.Connection.IsIntransaction = True Then
-                    oAd.SelectCommand.Transaction = LibX.Data.Manager.Connection.ActiveTransaction
-                End If
+                ' --- EF Core Data Fetching for ReQuery ---
+                ' TODO: Convert ReQuery to an Async method to properly use Await.
+                ' Calling .GetAwaiter().GetResult() blocks the current thread.
+                ' TODO: Implement dynamic entity type determination based on tabName.
 
-                oAd.Fill(mds.Tables(tabName))
+                Dim fetchedData As System.Collections.IList
+                Try
+                    If tabName.Equals("scusers", StringComparison.OrdinalIgnoreCase) Then
+                        fetchedData = EfDataHelper.GetEntityListFromSqlAsync(Of User)(oAeq2.Sql, Nothing).GetAwaiter().GetResult()
+                    Else
+                        fetchedData = EfDataHelper.GetEntityListFromSqlAsync(Of GenericItem)(oAeq2.Sql, Nothing).GetAwaiter().GetResult()
+                    End If
+                Catch ex As Exception
+                    Log.Add(ex) ' Log the exception
+                    fetchedData = New List(Of Object)() ' Ensure fetchedData is not null
+                End Try
+
+                ' mds.RejectChanges() was called before this block, preserving its original position.
+                ' Now, clear and populate with new data.
+                mds.Tables(tabName).Rows.Clear()
+
+                If fetchedData IsNot Nothing Then
+                    For Each item As Object In fetchedData
+                        Dim newRow As DataRow = mds.Tables(tabName).NewRow()
+                        ' --- Map properties from item to newRow ---
+                        If TypeOf item Is User Then
+                            Dim userItem = CType(item, User)
+                            If mds.Tables(tabName).Columns.Contains("UserID") Then newRow("UserID") = userItem.UserID
+                            If mds.Tables(tabName).Columns.Contains("UserName") AndAlso userItem.UserName IsNot Nothing Then newRow("UserName") = userItem.UserName Else If mds.Tables(tabName).Columns.Contains("UserName") Then newRow("UserName") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("PasswordHash") AndAlso userItem.PasswordHash IsNot Nothing Then newRow("PasswordHash") = userItem.PasswordHash Else If mds.Tables(tabName).Columns.Contains("PasswordHash") Then newRow("PasswordHash") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("SucursalCode") Then newRow("SucursalCode") = userItem.SucursalCode
+                            If mds.Tables(tabName).Columns.Contains("VendedorCode") Then newRow("VendedorCode") = userItem.VendedorCode
+                            ' TODO: Map other User properties as needed.
+                        ElseIf TypeOf item Is GenericItem Then
+                            Dim genericItem = CType(item, GenericItem)
+                            If mds.Tables(tabName).Columns.Contains("Id") Then newRow("Id") = genericItem.Id
+                            If mds.Tables(tabName).Columns.Contains("Name") AndAlso genericItem.Name IsNot Nothing Then newRow("Name") = genericItem.Name Else If mds.Tables(tabName).Columns.Contains("Name") Then newRow("Name") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("Description") AndAlso genericItem.Description IsNot Nothing Then newRow("Description") = genericItem.Description Else If mds.Tables(tabName).Columns.Contains("Description") Then newRow("Description") = DBNull.Value
+                            If mds.Tables(tabName).Columns.Contains("CreatedDate") Then newRow("CreatedDate") = genericItem.CreatedDate
+                            ' TODO: Map other GenericItem properties as needed.
+                        End If
+                        mds.Tables(tabName).Rows.Add(newRow)
+                    Next
+                    mds.Tables(tabName).AcceptChanges() ' Commit changes to the DataTable
+                End If
+                ' --- End EF Core Data Fetching for ReQuery ---
             End If
 
             Me.mRecordCount = 0
@@ -2438,12 +2840,48 @@ Public Property ReportMode() As Boolean
             mLastQuery = oAeq2.Sql
 
             If oAeq2.DoFill And Not Me.mHandledRowsFill Then
-                Dim oAd As New OleDb.OleDbDataAdapter(oAeq2.Sql, LibX.Data.Manager.Connection.ConnectionObject)
-                If LibX.Data.Manager.Connection.IsIntransaction = True Then
-                    oAd.SelectCommand.Transaction = LibX.Data.Manager.Connection.ActiveTransaction
-                End If
+                ' --- EF Core Data Fetching ---
+                ' TODO: Convert AcceptFind to an Async method to properly use Await.
+                ' Calling .GetAwaiter().GetResult() blocks the current thread and can lead to deadlocks in some contexts.
+                ' TODO: Implement dynamic entity type determination based on tabName instead of hardcoding GenericItem.
+                '       For example, by using a dictionary map or conditional logic:
+                ' Dim currentEntityType As Type
+                ' If tabName.Equals("scusers", StringComparison.OrdinalIgnoreCase) Then currentEntityType = GetType(User) Else currentEntityType = GetType(GenericItem) End If
+                ' And then call a modified EfDataHelper method that accepts a Type parameter, or use reflection.
 
-                oAd.Fill(mds.Tables(tabName))
+                Dim fetchedData As List(Of GenericItem)
+                Try
+                    fetchedData = EfDataHelper.GetEntityListFromSqlAsync(Of GenericItem)(oAeq2.Sql, Nothing).GetAwaiter().GetResult()
+                Catch ex As Exception
+                    Log.Add(ex) ' Log the exception
+                    fetchedData = New List(Of GenericItem)() ' Ensure fetchedData is not null
+                End Try
+
+                mds.Tables(tabName).Rows.Clear() ' Clear existing rows before populating
+
+                If fetchedData IsNot Nothing Then
+                    For Each item As GenericItem In fetchedData
+                        Dim newRow As DataRow = mds.Tables(tabName).NewRow()
+                        ' --- Map properties from item to newRow ---
+                        ' This is a simplified mapping. A more robust solution would:
+                        ' 1. Check if mds.Tables(tabName).Columns.Contains("ColumnName") before assigning.
+                        ' 2. Handle potential DBNull.Value for nullable properties in entities if the DataTable doesn't allow nulls.
+                        ' 3. Match entity properties to DataTable column names, which might require a mapping dictionary if names differ.
+
+                        If mds.Tables(tabName).Columns.Contains("Id") Then newRow("Id") = item.Id
+                        If mds.Tables(tabName).Columns.Contains("Name") AndAlso item.Name IsNot Nothing Then newRow("Name") = item.Name Else If mds.Tables(tabName).Columns.Contains("Name") Then newRow("Name") = DBNull.Value
+                        If mds.Tables(tabName).Columns.Contains("Description") AndAlso item.Description IsNot Nothing Then newRow("Description") = item.Description Else If mds.Tables(tabName).Columns.Contains("Description") Then newRow("Description") = DBNull.Value
+                        If mds.Tables(tabName).Columns.Contains("CreatedDate") Then newRow("CreatedDate") = item.CreatedDate
+                        ' TODO: Add mapping for other relevant properties based on GenericItem and actual table schema.
+                        ' Example for other potential GenericItem properties (ensure they exist in GenericItem and the DataTable):
+                        ' If mds.Tables(tabName).Columns.Contains("ModifiedDate") AndAlso item.ModifiedDate.HasValue Then newRow("ModifiedDate") = item.ModifiedDate.Value Else If mds.Tables(tabName).Columns.Contains("ModifiedDate") Then newRow("ModifiedDate") = DBNull.Value
+                        ' If mds.Tables(tabName).Columns.Contains("IsEnabled") Then newRow("IsEnabled") = item.IsEnabled
+
+                        mds.Tables(tabName).Rows.Add(newRow)
+                    Next
+                    mds.Tables(tabName).AcceptChanges() ' Commit changes to the DataTable
+                End If
+                ' --- End EF Core Data Fetching ---
             End If
 
             Me.mRecordCount = 0
